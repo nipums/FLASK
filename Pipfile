@@ -5,8 +5,6 @@ name = "pypi"
 
 [packages]
 flask = ">=2.2.2"
-flask_bcrypt = ">=2.2.2"
-psycopg2-binary = ">=2.2.2"
 
 [dev-packages]
 
