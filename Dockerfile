@@ -5,4 +5,4 @@ WORKDIR /usr/src/app
 
 COPY ./ /usr/src/app/
 RUN pipenv install --deploy --ignore-pipfile
-CMD pipenv run python app.py
+CMD pipenv run python FORMREG.py
