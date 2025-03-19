@@ -102,7 +102,7 @@
             <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
-
+    
     <script>
         function sendMessage() {
             let input = document.getElementById("messageInput");
@@ -125,6 +125,7 @@
                 .then(response => response.json())
                 .then(data => {
                     let chatMessages = document.getElementById("chatMessages");
+                    let isAtBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= chatMessages.scrollTop + 10;
                     chatMessages.innerHTML = "";
                     data.forEach(msg => {
                         let messageDiv = document.createElement("div");
@@ -135,7 +136,9 @@
                         messageDiv.textContent = `${msg.username}: ${msg.message}`;
                         chatMessages.appendChild(messageDiv);
                     });
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    if (isAtBottom) {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
                 });
         }
 
