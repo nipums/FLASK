@@ -9,7 +9,7 @@ flask_bcrypt = "*"
 psycopg2-binary = "*"
 flask_mail = "*"
 itsdangerous = "*"
-
+flask_session = "*"
 
 [dev-packages]
 
