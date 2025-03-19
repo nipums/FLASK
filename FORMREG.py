@@ -171,6 +171,59 @@ def chat():
 
     return render_template("chat.html", username=session['username'])
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+            user = cursor.fetchone()
+
+            if user:
+                token = s.dumps(email, salt='password-reset')
+                reset_url = url_for('reset_password', token=token, _external=True)
+                msg = Message("Сброс пароля", recipients=[email])
+                msg.body = f'Для сброса пароля перейдите по ссылке: {reset_url}'
+                mail.send(msg)
+                flash("Ссылка для сброса пароля отправлена!", "info")
+            else:
+                flash("Email не найден!", "danger")
+
+        except psycopg2.Error as e:
+            flash("Ошибка базы данных!", "danger")
+            print("Database error:", e)
+
+        finally:
+            cursor.close()
+
+    return render_template("forgot_password.html")
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = s.loads(token, salt='password-reset', max_age=3600)
+    except SignatureExpired:
+        flash("Срок действия ссылки истёк!", "danger")
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        new_password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET password = %s WHERE email = %s", (new_password, email))
+            conn.commit()
+            flash("Пароль изменён!", "success")
+        except psycopg2.Error as e:
+            flash("Ошибка базы данных!", "danger")
+            print("Database error:", e)
+        finally:
+            cursor.close()
+
+        return redirect(url_for('login'))
+
+    return render_template("reset_password.html")
 
 @app.route('/messages')
 def get_messages():
