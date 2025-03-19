@@ -25,6 +25,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL
 )''')
 
+# Создание таблиц
 cursor.execute('''CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
