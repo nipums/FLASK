@@ -16,8 +16,8 @@
         {% endwith %}
         <form action="/login" method="POST">
             <div class="mb-3">
-                <label for="username" class="form-label">Логин</label>
-                <input type="text" name="username" class="form-control" required>
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Пароль</label>
@@ -25,6 +25,7 @@
             </div>
             <button type="submit" class="btn btn-primary w-100">Войти</button>
         </form>
+        <p class="text-center mt-3">Забыли пароль? <a href="/forgot_password">Восстановить</a></p>
         <p class="text-center mt-3">Нет аккаунта? <a href="/register">Регистрация</a></p>
     </div>
 </body>

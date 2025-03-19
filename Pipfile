@@ -7,6 +7,9 @@ name = "pypi"
 flask = ">=2.2.2"
 flask_bcrypt = "*"
 psycopg2-binary = "*"
+flask_mail = "*"
+itsdangerous = "*"
+
 
 [dev-packages]
 

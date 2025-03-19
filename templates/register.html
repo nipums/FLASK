@@ -16,8 +16,12 @@
         {% endwith %}
         <form action="/register" method="POST">
             <div class="mb-3">
-                <label for="username" class="form-label">Логин</label>
+                <label for="username" class="form-label">Имя пользователя</label>
                 <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Пароль</label>

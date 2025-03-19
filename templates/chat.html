@@ -88,18 +88,6 @@
         .chat-input button:hover {
             background: #0056b3;
         }
-        #scrollButton {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -114,8 +102,7 @@
             <button onclick="sendMessage()">Отправить</button>
         </div>
     </div>
-    <button id="scrollButton" onclick="scrollToBottom()">⬇ Вниз</button>
-    
+
     <script>
         function sendMessage() {
             let input = document.getElementById("messageInput");
@@ -138,7 +125,6 @@
                 .then(response => response.json())
                 .then(data => {
                     let chatMessages = document.getElementById("chatMessages");
-                    let isAtBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= chatMessages.scrollTop + 10;
                     chatMessages.innerHTML = "";
                     data.forEach(msg => {
                         let messageDiv = document.createElement("div");
@@ -149,27 +135,9 @@
                         messageDiv.textContent = `${msg.username}: ${msg.message}`;
                         chatMessages.appendChild(messageDiv);
                     });
-                    if (isAtBottom) {
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 });
         }
-
-        function scrollToBottom() {
-            let chatMessages = document.getElementById("chatMessages");
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        let chatMessages = document.getElementById("chatMessages");
-        let scrollButton = document.getElementById("scrollButton");
-        
-        chatMessages.addEventListener("scroll", () => {
-            if (chatMessages.scrollTop < chatMessages.scrollHeight - chatMessages.clientHeight - 50) {
-                scrollButton.style.display = "block";
-            } else {
-                scrollButton.style.display = "none";
-            }
-        });
 
         setInterval(loadMessages, 2000);
         loadMessages();
