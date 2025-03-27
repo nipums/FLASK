@@ -37,6 +37,23 @@ conn = psycopg2.connect(
     target_session_attrs="read-write"
 )
 
+cursor2 = conn.cursor()
+
+# Создание таблиц
+cursor2.execute('''CREATE TABLE IF NOT EXISTS users (
+     id SERIAL PRIMARY KEY,
+     username VARCHAR(50) UNIQUE NOT NULL,
+     password TEXT NOT NULL
+ )''')
+
+cursor2.execute('''CREATE TABLE IF NOT EXISTS messages (
+     id SERIAL PRIMARY KEY,
+     user_id INTEGER REFERENCES users(id),
+     message TEXT NOT NULL,
+     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ )''')
+conn.commit()
+cursor2.close()
 
 @app.route('/')
 def home():
