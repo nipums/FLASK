@@ -29,11 +29,11 @@ mail = Mail(app)
 
 # Подключение к базе данных
 conn = psycopg2.connect(
-    host="deblahofum.beget.app",
+    host="riyumoswi.beget.app",
     port=5432,
     dbname="default_db",
     user="cloud_user",
-    password="*Wbx58gJxioR",
+    password="InXSf&5&ddqv",
     target_session_attrs="read-write"
 )
 
