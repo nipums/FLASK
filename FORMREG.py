@@ -39,11 +39,13 @@ conn = psycopg2.connect(
 
 cursor2 = conn.cursor()
 
-# Создание таблиц
+# Создание таблиц, если их нет
 cursor2.execute('''CREATE TABLE IF NOT EXISTS users (
      id SERIAL PRIMARY KEY,
      username VARCHAR(50) UNIQUE NOT NULL,
-     password TEXT NOT NULL
+     email VARCHAR(100) UNIQUE NOT NULL,
+     password TEXT NOT NULL,
+     is_verified BOOLEAN DEFAULT FALSE
  )''')
 
 cursor2.execute('''CREATE TABLE IF NOT EXISTS messages (
@@ -52,6 +54,7 @@ cursor2.execute('''CREATE TABLE IF NOT EXISTS messages (
      message TEXT NOT NULL,
      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
  )''')
+
 conn.commit()
 cursor2.close()
 
