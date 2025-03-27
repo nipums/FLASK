@@ -71,6 +71,15 @@ def register():
         email = request.form['email']
         password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
 
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = %s OR username = %s", (email, username))
+        existing_user = cursor.fetchone()
+        cursor.close()
+
+        if existing_user:
+            flash("Такой пользователь уже существует!", "danger")
+            return redirect(url_for('register'))
+
         code = random.randint(100000, 999999)
         session['verification_code'] = code
         session['pending_username'] = username
