@@ -252,32 +252,6 @@ def verify_2fa():
             flash("Неверный код!", "danger")
     return render_template("verify_2fa.html")
 
-
-@app.route('/chat', methods=['GET', 'POST'])
-def chat():
-    if 'user_id' not in session or not session.get('authenticated'):
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        data = request.get_json()
-        message = data.get('message', '').strip()
-
-        if message:
-            try:
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO messages (user_id, message) VALUES (%s, %s)", (session['user_id'], message))
-                conn.commit()
-                return jsonify({"status": "success"})
-            except psycopg2.Error as e:
-                print("Database error:", e)
-                return jsonify({"status": "error", "message": "Ошибка базы данных!"})
-            finally:
-                cursor.close()
-        else:
-            return jsonify({"status": "error", "message": "Сообщение не может быть пустым"})
-
-    return render_template("chat.html", username=session['username'])
-
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
