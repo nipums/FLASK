@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
             margin: 0;
             padding: 0;
             display: flex;
@@ -18,8 +18,8 @@
         .chat-container {
             width: 400px;
             background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -35,28 +35,21 @@
             justify-content: space-between;
             align-items: center;
         }
-        .chat-header button {
-            background: red;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
         .chat-messages {
-            padding: 10px;
-            height: 300px;
+            padding: 15px;
+            height: 350px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            background: #f9f9f9;
         }
         .message {
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 5px;
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 10px;
             margin-bottom: 10px;
-            max-width: 70%;
+            max-width: 75%;
+            word-wrap: break-word;
         }
         .message.self {
             background: #007bff;
@@ -71,44 +64,75 @@
         }
         .chat-input input {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 20px;
             outline: none;
+            font-size: 14px;
         }
         .chat-input button {
             background: #007bff;
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 12px 18px;
             margin-left: 10px;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 20px;
+            font-size: 14px;
         }
         .chat-input button:hover {
             background: #0056b3;
+        }
+        .add-user {
+            display: flex;
+            padding: 10px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+        .add-user input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        .add-user button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 20px;
+        }
+        .add-user button:hover {
+            background: #218838;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            Чат
+            <span>Чат ID: {{ chat_id }}</span>
             <button onclick="window.location.href='/logout'">Выйти</button>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
             <input type="text" id="messageInput" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()">Отправить</button>
+            <button onclick="sendMessage()">➤</button>
+        </div>
+        <div class="add-user">
+            <input type="text" id="usernameInput" placeholder="Имя пользователя для добавления">
+            <button onclick="addUserToChat()">+</button>
         </div>
     </div>
-    
+
     <script>
         function sendMessage() {
             let input = document.getElementById("messageInput");
             let messageText = input.value.trim();
             if (messageText !== "") {
-                fetch('/chat', {
+                fetch(`/chat/{{ chat_id }}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({message: messageText})
@@ -121,11 +145,10 @@
         }
 
         function loadMessages() {
-            fetch('/messages')
+            fetch(`/messages/{{ chat_id }}`)
                 .then(response => response.json())
                 .then(data => {
                     let chatMessages = document.getElementById("chatMessages");
-                    let isAtBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= chatMessages.scrollTop + 10;
                     chatMessages.innerHTML = "";
                     data.forEach(msg => {
                         let messageDiv = document.createElement("div");
@@ -136,10 +159,20 @@
                         messageDiv.textContent = `${msg.username}: ${msg.message}`;
                         chatMessages.appendChild(messageDiv);
                     });
-                    if (isAtBottom) {
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 });
+        }
+
+        function addUserToChat() {
+            let username = document.getElementById("usernameInput").value.trim();
+            if (username) {
+                fetch('/add_user_to_chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `chat_id={{ chat_id }}&username=${username}`
+                }).then(response => response.json())
+                .then(data => alert(data.message || "Пользователь добавлен!"));
+            }
         }
 
         setInterval(loadMessages, 2000);

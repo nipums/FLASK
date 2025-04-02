@@ -29,11 +29,11 @@ mail = Mail(app)
 
 # Подключение к базе данных
 conn = psycopg2.connect(
-    host="riyumoswi.beget.app",
+    host="quastorebquoong.beget.app",
     port=5432,
     dbname="default_db",
     user="cloud_user",
-    password="InXSf&5&ddqv",
+    password="JdSHbUL8z*We",
     target_session_attrs="read-write"
 )
 
@@ -46,14 +46,27 @@ cursor2.execute('''CREATE TABLE IF NOT EXISTS users (
      email VARCHAR(100) UNIQUE NOT NULL,
      password TEXT NOT NULL,
      is_verified BOOLEAN DEFAULT FALSE
- )''')
+)''')
+
+cursor2.execute('''CREATE TABLE IF NOT EXISTS chats (
+     id SERIAL PRIMARY KEY,
+     name VARCHAR(100) NOT NULL,
+     created_by INTEGER REFERENCES users(id)
+)''')
+
+cursor2.execute('''CREATE TABLE IF NOT EXISTS chat_members (
+     id SERIAL PRIMARY KEY,
+     chat_id INTEGER REFERENCES chats(id),
+     user_id INTEGER REFERENCES users(id)
+)''')
 
 cursor2.execute('''CREATE TABLE IF NOT EXISTS messages (
      id SERIAL PRIMARY KEY,
+     chat_id INTEGER REFERENCES chats(id),
      user_id INTEGER REFERENCES users(id),
      message TEXT NOT NULL,
      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
- )''')
+)''')
 
 conn.commit()
 cursor2.close()
@@ -62,6 +75,71 @@ cursor2.close()
 def home():
     return redirect(url_for('login'))
 
+@app.route('/chat/<int:chat_id>', methods=['GET', 'POST'])
+def chat(chat_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM chat_members WHERE chat_id = %s AND user_id = %s", (chat_id, session['user_id']))
+    membership = cursor.fetchone()
+    cursor.close()
+
+    if not membership:
+        flash("Вы не состоите в этом чате!", "danger")
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        data = request.get_json()
+        message = data.get('message', '').strip()
+
+        if message:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO messages (chat_id, user_id, message) VALUES (%s, %s, %s)",
+                           (chat_id, session['user_id'], message))
+            conn.commit()
+            cursor.close()
+            return jsonify({"status": "success"})
+        return jsonify({"status": "error", "message": "Сообщение не может быть пустым"})
+
+    return render_template("chat.html", chat_id=chat_id)
+
+
+@app.route('/create_chat', methods=['POST'])
+def create_chat():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    chat_name = request.form['chat_name']
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO chats (name, created_by) VALUES (%s, %s) RETURNING id", (chat_name, session['user_id']))
+    chat_id = cursor.fetchone()[0]
+    cursor.execute("INSERT INTO chat_members (chat_id, user_id) VALUES (%s, %s)", (chat_id, session['user_id']))
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('chat', chat_id=chat_id))
+
+
+@app.route('/add_user_to_chat', methods=['POST'])
+def add_user_to_chat():
+    if 'user_id' not in session:
+        return jsonify({"status": "error", "message": "Необходима авторизация"})
+
+    chat_id = request.form['chat_id']
+    username = request.form['username']
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+    user = cursor.fetchone()
+
+    if user:
+        user_id = user[0]
+        cursor.execute("INSERT INTO chat_members (chat_id, user_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
+                       (chat_id, user_id))
+        conn.commit()
+        cursor.close()
+        return jsonify({"status": "success"})
+
+    return jsonify({"status": "error", "message": "Пользователь не найден"})
 
 # Регистрация
 @app.route('/register', methods=['GET', 'POST'])
@@ -278,4 +356,3 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
